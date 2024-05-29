@@ -1,3 +1,4 @@
+package java_exercise;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
