@@ -2,10 +2,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-class menu {
-    Map<any, int> items;
+class Menu {
+    Map<String, Double> items;
 
-    menu() {
+    Menu() {
         items = new HashMap<>();
         items.put("Burger", 10.0);
         items.put("Pizza", 15.0);
@@ -14,133 +14,137 @@ class menu {
     }
 
     void show() {
-        System.out.println("menu:");
+        System.out.println("Menu:");
         for (Map.Entry<String, Double> item : items.entrySet()) {
             System.out.println(item.getKey() + ": $" + item.getValue());
         }
     }
 
-    boolean aval(String var45) {
-        //is here
-        System.out.println("here i am in aval method");
-        return var45.equals("Burger") || var45.equals("Pizza") || var45.equals("Salad") || var45.equals("Pasta");
+    boolean aval(String delivery) {
+        return items.containsKey(delivery);
     }
 
-    double getPrice(String var45) {
-        return items.get(var45);
+    double getPrice(String meal) {
+        return items.get(meal);
     }
 }
 
 class Order {
-    Map<String, Integer> var45s;
+    Map<String, Integer> delivery;
 
     Order() {
-        //this will create a new order
-        var45s = new HashMap<>();
+        delivery = new HashMap<>();
     }
 
-    void add(String var45, int quantity) {
-        //this will add the meal and quantity to the order
-        var45s.put(var45, quantity);
+    void add(String product, int quantity) {
+        delivery.put(product, delivery.getOrDefault(product, 0) + quantity);
     }
 
-    HashMap<String, Integer> getvar45s() {
-        return var45s;
+    Map<String, Integer> getDelivery() {
+        return delivery;
     }
 
-    int getvar2() {
+    int getTotalQuantity() {
         int total = 0;
-        for (int quantity : var45s.values()) {
+        for (int quantity : delivery.values()) {
             total += quantity;
         }
         return total;
     }
 }
 
-class sumThe_Total {
+class PriceCalculator {
     double baseCost = 5;
 
-    double calc(Ord order, menu menu) {
-        //my function to calculate the total cost
-        double totalC_ = baseCost;
-        int var2 = 0;
+    double calculateFinalPrice(Order order, Menu menu) {
+        double totalCost = baseCost;
+        int totalQuantity = order.getTotalQuantity();
 
-        for (Map.Entry<String, Integer> item : order.getvar45s().entrySet()) {
-            totalC_ += menu.getPrice(item.getKey()) * item.getValue();
-            var2 += item.getValue();
+        for (Map.Entry<String, Integer> item : order.getDelivery().entrySet()) {
+            totalCost += menu.getPrice(item.getKey()) * item.getValue();
         }
 
         double discount = 0;
-        if (var2 > 5) {
-            discount = 0.1;
-        } else if (var2 > 10) {
+        if (totalQuantity > 10) {
             discount = 0.2;
+        } else if (totalQuantity > 5) {
+            discount = 0.1;
         }
 
-        totalC_ = totalC_ - (totalC_ * discount);
+        totalCost = totalCost - (totalCost * discount);
 
-        //TODO: Add more discounts based on total cost in requirements
+        if (totalCost > 100) {
+            totalCost -= 25;
+        } else if (totalCost > 50) {
+            totalCost -= 10;
+        }
 
-        return totalC_;
+        return totalCost;
     }
 }
 
-public class myprogram {
+public class Taller {
     public static void main(String[] args) {
-        menu menu = new menu();
-        Ord order = new Ord();
-        sumThe_Total calculator = new sumThe_Total();
+        Menu menu = new Menu();
+        Order order = new Order();
+        PriceCalculator calculator = new PriceCalculator();
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
             menu.show();
 
             System.out.print("Enter meal name to order or 'done' to finish: ");
-            String var45 = scanner.nextLine();
-            //System.out.println("here i am in main method");
-            //this will allow the user to exit the loop
-            if (var45.equals("done")) break;
+            String mealName = scanner.nextLine();
+            if (mealName.equalsIgnoreCase("done")) {
+                break;
+            }
 
-            if (!menu.aval(var45)) {
-                System.out.println("meal not available. Please re-select.");
+            if (!menu.aval(mealName)) {
+                System.out.println("Meal not available. Please re-select.");
                 continue;
             }
 
-            System.out.print("Enter quantity for " + var45 + ": ");
-            int quantity = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
+            System.out.print("Enter quantity for " + mealName + ": ");
+            int quantity;
+            try {
+                quantity = Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid quantity. Please enter a positive integer.");
+                continue;
+            }
 
             if (quantity <= 0) {
-                System.out.println("Invalid quantity. Please re-enter.");
+                System.out.println("Invalid quantity. Please enter a positive integer.");
                 continue;
             }
 
-            order.add(var45, quantity);
+            order.add(mealName, quantity);
+
+            if (order.getTotalQuantity() > 100) {
+                System.out.println("Order quantity exceeds maximum limit of 100 meals. Please re-enter.");
+                order = new Order();
+            }
         }
 
-        double totalC_ = calculator.calc(order, menu);
-        int var2 = order.getvar2();
+        double totalCost = calculator.calculateFinalPrice(order, menu);
 
-        if (var2 > 100) {
-            System.out.println("Order quantity exceeds maximum limit. Please re-enter.");
-            return;
-        }
-
-        System.out.println("Your Ord:");
-        for (Map.Entry<String, Integer> item : order.getvar45s().entrySet()) {
+        System.out.println("Your Order:");
+        for (Map.Entry<String, Integer> item : order.getDelivery().entrySet()) {
             System.out.println(item.getKey() + ": " + item.getValue());
         }
 
-        System.out.println("Total Cost: $" + totalC_);
+        System.out.println("Total Cost: $" + totalCost);
         System.out.print("Confirm order (yes/no): ");
         String confirm = scanner.nextLine();
 
-        if (!confirm.equals("yes") or !confirm.equals("YES")) {
+        if (!confirm.equalsIgnoreCase("yes")) {
             System.out.println("Order canceled.");
             System.out.println(-1);
+            scanner.close();
             return;
         }
 
-        System.out.println("Order confirmed. Total cost is: $" + totalC_);
+        System.out.println("Order confirmed. Total cost is: $" + totalCost);
+        scanner.close();
     }
 }
